@@ -1,9 +1,12 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from agent import reasoning_agent
 from memory import ConversationMemory
 
 app = FastAPI(title="AI Research Agent")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 memory = ConversationMemory()
 
 class Query(BaseModel):
@@ -11,8 +14,8 @@ class Query(BaseModel):
     use_memory: bool = False
 
 @app.get("/")
-def health_check():
-    return {"status": "Agent is running"}
+def index():
+    return FileResponse("static/index.html")
 
 @app.post("/agent")
 def run_agent(q: Query):
