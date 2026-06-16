@@ -78,3 +78,56 @@ Provide a well-structured answer with source citations.
         "sources": sources,
         "plan": plan
     }
+
+    def reasoning_agent_stream(query: str):
+    """Streaming version — yields text chunks as Claude generates them."""
+
+    # Step 1: Plan
+    plan = ask_claude(
+        f"Break this research task into 2-3 clear steps: {query}",
+        system="You are a research planning assistant. Be concise."
+    )
+
+    # Step 2: Search
+    sources = search_web(query)
+
+    # Step 3: Scrape all pages simultaneously
+    urls = [s["url"] for s in sources]
+    contents = scrape_pages(urls)
+
+    all_content = ""
+    for source, content in zip(sources, contents):
+        all_content += f"\n\n--- Source: {source['title']} ({source['url']}) ---\n{content}"
+
+    # Step 4: Stream the synthesis
+    final_prompt = f"""
+You are a research assistant. Use the information below to answer the question.
+Include citations referencing the source titles when you use information from them.
+
+Research Plan:
+{plan}
+
+Gathered Information:
+{all_content}
+
+Question: {query}
+
+Provide a well-structured answer with source citations.
+"""
+
+    # Yield metadata first
+    import json
+    yield f"data: {json.dumps({'type': 'plan', 'content': plan})}\n\n"
+    yield f"data: {json.dumps({'type': 'sources', 'content': sources})}\n\n"
+
+    # Stream Claude's response word by word
+    with client.messages.stream(
+        model="claude-sonnet-4-6",
+        max_tokens=1024,
+        system="You are an expert research synthesizer.",
+        messages=[{"role": "user", "content": final_prompt}]
+    ) as stream:
+        for text in stream.text_stream:
+            yield f"data: {json.dumps({'type': 'token', 'content': text})}\n\n"
+
+    yield f"data: {json.dumps({'type': 'done'})}\n\n"

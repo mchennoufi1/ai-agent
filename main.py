@@ -4,6 +4,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from agent import reasoning_agent
 from memory import ConversationMemory
+from fastapi.responses import StreamingResponse
 
 app = FastAPI(title="AI Research Agent")
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -35,6 +36,17 @@ def run_agent(q: Query):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+        
+@app.post("/agent/stream")
+def run_agent_stream(q: Query):
+    return StreamingResponse(
+        reasoning_agent_stream(q.question),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no"
+        }
+    )        
 
 @app.delete("/memory")
 def clear_memory():
