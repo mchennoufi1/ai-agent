@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AI Research Agent</title>
@@ -173,6 +174,27 @@
       padding: 16px;
       display: none;
     }
+    .answer-box h1, .answer-box h2, .answer-box h3 {
+    color: #a78bfa;
+    margin: 16px 0 8px;
+    }
+    .answer-box strong { color: #e0e0e0; }
+    .answer-box a { color: #48cfad; }
+    .answer-box table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 12px 0;
+    }
+    .answer-box td, .answer-box th {
+      border: 1px solid #2e2e3e;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    .answer-box th { background: #1a1a2e; color: #a78bfa; }
+    .answer-box ul, .answer-box ol { padding-left: 20px; }
+    .answer-box li { margin: 4px 0; 
+    }
+    
   </style>
 </head>
 <body>
@@ -254,7 +276,7 @@
 
         // Show result
         document.getElementById("planText").textContent = data.plan;
-        document.getElementById("answerText").textContent = data.answer;
+        document.getElementById("answerText").innerHTML = marked.parse(data.answer);
 
         const sourcesList = document.getElementById("sourcesList");
         sourcesList.innerHTML = data.sources.map(s => `
