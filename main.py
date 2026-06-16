@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from agent import reasoning_agent
+from agent import reasoning_agent, reasoning_agent_stream
 from memory import ConversationMemory
 from fastapi.responses import StreamingResponse
 
